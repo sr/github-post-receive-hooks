@@ -3,22 +3,22 @@ require 'net/https'
 require 'nokogiri'
 
 class PostreceiveHooks
-  def self.run(user, token, repo, urls)
-    new(user, token, repo, urls).run
+  def self.run(user, token, repo, enabled_urls, disabled_urls)
+    new(user, token, repo, enabled_urls, disabled_urls).run
   end
 
-  def initialize(user, token, repo, urls)
-    @user = user
-    @token = token
-    @repo = repo
-    @urls = urls
+  def initialize(user, token, repo, enabled_urls, disabled_urls)
+    @user          = user
+    @token         = token
+    @repo          = repo
+    @enabled_urls  = enabled_urls
+    @disabled_urls = disabled_urls
   end
 
   def run
     raise "No user specified" if @user.nil? || @user.empty?
     raise "No token specified" if @token.nil? || @token.empty?
     raise "No repo specified" if @repo.nil? || @repo.empty?
-    raise "No urls specified" if @urls.nil? || @urls.empty?
 
     puts "Current: "
     puts current_urls
@@ -50,7 +50,7 @@ class PostreceiveHooks
   end
 
   def required_urls
-    (current_urls + @urls).uniq
+    (current_urls + @enabled_urls - @disabled_urls).uniq
   end
 
   def update
